@@ -59,12 +59,23 @@ class JenkinsApi {
         post('createItem', missingJobConfig, [name: missingJob.jobName, mode: 'copy', from: templateJob.jobName], ContentType.XML)
 
         post('job/' + missingJob.jobName + "/config.xml", missingJobConfig, [:], ContentType.XML)
-        //Forced disable enable to work around Jenkins' automatic disabling of clones jobs
-        // //But only if the original job was enabled
+
         post('job/' + missingJob.jobName + '/disable')
+
+        //Forced disable enable to work around Jenkins' automatic disabling of clones jobs
+        //But only if the original job was enabled
         // if (!missingJobConfig.contains("<disabled>true</disabled>")) {
         post('job/' + missingJob.jobName + '/enable')
         // }
+
+        // Resave the config after enabling so polling also works again
+        post('job/' + missingJob.jobName + "/config.xml", missingJobConfig, [:], ContentType.XML)
+
+        // try to disable / enable again (polling problem!)
+        post('job/' + missingJob.jobName + '/disable')
+        post('job/' + missingJob.jobName + '/enable')
+
+
     }
 
     void startJob(ConcreteJob job) {
